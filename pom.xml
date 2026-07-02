@@ -33,6 +33,13 @@
     </developer>
   </developers>
 
+  <scm>
+    <connection>scm:git:https://github.com/lenaschoenburg/branch-scoped-local-repository.git</connection>
+    <developerConnection>scm:git:git@github.com:lenaschoenburg/branch-scoped-local-repository.git</developerConnection>
+    <url>https://github.com/lenaschoenburg/branch-scoped-local-repository</url>
+    <tag>HEAD</tag>
+  </scm>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>17</maven.compiler.release>
@@ -143,4 +150,69 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <!-- Publishing to Maven Central via central.sonatype.com. Requires a portal user token
+         in ~/.m2/settings.xml under <server><id>central</id> and a GPG key whose public part
+         is published to a keyserver. Usage: mvn -Prelease deploy -->
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.3.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.12.0</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>3.2.8</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <bestPractices>true</bestPractices>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.11.0</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
