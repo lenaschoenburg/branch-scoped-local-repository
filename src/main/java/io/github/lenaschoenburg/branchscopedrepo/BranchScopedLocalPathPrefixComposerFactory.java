@@ -55,10 +55,23 @@ public final class BranchScopedLocalPathPrefixComposerFactory
 
   @Override
   public LocalPathPrefixComposer createComposer(final RepositorySystemSession session) {
-    final String localPrefix = branchScopedLocalPrefix(session);
-    LOGGER.debug("Branch-scoped local repository: using local prefix '{}'", localPrefix);
+    final String scopedPrefix = branchScopedLocalPrefix(session);
+    final boolean split;
+    final String localPrefix;
+    if (scopedPrefix != null) {
+      // A detected branch turns the split local repository on, so registering the extension
+      // (e.g. user-wide in ~/.m2/extensions.xml) is the only opt-in step needed. An explicit
+      // aether.enhancedLocalRepository.split setting still wins.
+      split = ConfigUtils.getBoolean(session, true, CONF_PROP_SPLIT);
+      localPrefix = scopedPrefix;
+    } else {
+      split = isSplit(session);
+      localPrefix = getLocalPrefix(session);
+    }
+    LOGGER.debug(
+        "Branch-scoped local repository: split={}, using local prefix '{}'", split, localPrefix);
     return new BranchScopedComposer(
-        isSplit(session),
+        split,
         localPrefix,
         isSplitLocal(session),
         getRemotePrefix(session),
@@ -69,28 +82,28 @@ public final class BranchScopedLocalPathPrefixComposerFactory
         getSnapshotsPrefix(session));
   }
 
+  /** Returns the branch-scoped local prefix, or {@code null} when no scoping applies. */
   private String branchScopedLocalPrefix(final RepositorySystemSession session) {
-    final String basePrefix = getLocalPrefix(session);
     if (!ConfigUtils.getBoolean(session, true, CONFIG_PROP_ENABLED)) {
       LOGGER.debug("Branch scoping disabled via {}", CONFIG_PROP_ENABLED);
-      return basePrefix;
+      return null;
     }
     final Path projectRoot = projectRoot(session);
     if (projectRoot == null) {
       LOGGER.debug("No project directory found in session, not scoping by branch");
-      return basePrefix;
+      return null;
     }
     final String branch = GitBranch.detect(projectRoot);
     if (branch == null) {
       LOGGER.debug("No git branch detected at {}, not scoping by branch", projectRoot);
-      return basePrefix;
+      return null;
     }
     final String sanitized = GitBranch.sanitize(branch);
     if (sanitized == null) {
       LOGGER.debug("Branch name '{}' left nothing usable after sanitization", branch);
-      return basePrefix;
+      return null;
     }
-    return basePrefix + "/" + sanitized;
+    return getLocalPrefix(session) + "/" + sanitized;
   }
 
   private static Path projectRoot(final RepositorySystemSession session) {

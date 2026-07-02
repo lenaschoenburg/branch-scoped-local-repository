@@ -171,9 +171,33 @@ final class BranchScopedLocalPathPrefixComposerFactoryTest {
   }
 
   @Test
-  void noPrefixesWhenSplitIsOff() throws IOException {
+  void noPrefixesWhenSplitIsExplicitlyOff() throws IOException {
     checkoutBranch("main");
     session.setConfigProperty("aether.enhancedLocalRepository.split", "false");
+    assertNull(composer().getPathPrefixForLocalArtifact(SNAPSHOT_ARTIFACT));
+  }
+
+  @Test
+  void detectedBranchTurnsSplitOnByDefault() throws IOException {
+    checkoutBranch("main");
+    session.setConfigProperty("aether.enhancedLocalRepository.split", null);
+    assertEquals("installed/main", composer().getPathPrefixForLocalArtifact(SNAPSHOT_ARTIFACT));
+    assertEquals("cached", composer().getPathPrefixForRemoteArtifact(RELEASE_ARTIFACT, CENTRAL));
+  }
+
+  @Test
+  void splitStaysOffWithoutDetectedBranch() {
+    session.setConfigProperty("aether.enhancedLocalRepository.split", null);
+    assertNull(composer().getPathPrefixForLocalArtifact(SNAPSHOT_ARTIFACT));
+    assertNull(composer().getPathPrefixForRemoteArtifact(RELEASE_ARTIFACT, CENTRAL));
+  }
+
+  @Test
+  void splitStaysOffWhenDisabledViaConfigWithoutExplicitSplit() throws IOException {
+    checkoutBranch("main");
+    session.setConfigProperty("aether.enhancedLocalRepository.split", null);
+    session.setConfigProperty(
+        BranchScopedLocalPathPrefixComposerFactory.CONFIG_PROP_ENABLED, "false");
     assertNull(composer().getPathPrefixForLocalArtifact(SNAPSHOT_ARTIFACT));
   }
 }
