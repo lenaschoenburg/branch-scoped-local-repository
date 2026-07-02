@@ -4,8 +4,8 @@
 #
 # Required repository secrets:
 #   CENTRAL_USERNAME / CENTRAL_PASSWORD  - central.sonatype.com user token
-#   MAVEN_GPG_KEY                        - armored private key (gpg --export-secret-keys --armor)
-#   MAVEN_GPG_PASSPHRASE                 - its passphrase
+#   MAVEN_GPG_KEY                        - armored, passphrase-less private key
+#                                          (a CI-only copy; the local key keeps its passphrase)
 name: Release
 
 on:
@@ -30,11 +30,9 @@ jobs:
           server-username: MAVEN_CENTRAL_USERNAME
           server-password: MAVEN_CENTRAL_PASSWORD
           gpg-private-key: ${{ secrets.MAVEN_GPG_KEY }}
-          gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
       - name: Publish to Maven Central
         run: mvn -B -Prelease deploy -Drevision="${GITHUB_REF_NAME#v}"
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
