@@ -48,6 +48,13 @@ Manual alternatives: copy the jar into `$MAVEN_HOME/lib/ext/` yourself, or pass
 (`export MAVEN_OPTS="-Dmaven.ext.class.path=..."`); mvnd only honors it as an actual command-line
 flag.
 
+#### IntelliJ IDEA
+
+IDEA's Maven sync uses the installation configured under *Settings → Build Tools → Maven → Maven
+home path*. Set it to **"Use Maven wrapper"** (or any installation the install script covered) and
+the extension is active in the IDE as well. With IDEA's *bundled* Maven, syncs run **without** the
+extension and resolve through the plain repository layout — pick an explicit Maven home instead.
+
 Once loaded, the extension turns on the split local repository by itself whenever it detects a git
 branch, so no project files change and no further flags are needed. Builds of projects that are
 not git checkouts are unaffected.

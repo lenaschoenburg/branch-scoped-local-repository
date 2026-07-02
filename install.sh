@@ -30,6 +30,17 @@ done
 
 log() { printf '%s\n' "$*"; }
 
+# The extension links against resolver 1.9.x internals (Maven 3.9.x). Installing it into
+# a Maven that ships another resolver line would break that installation's builds outright,
+# so incompatible installations are skipped.
+is_compatible() {
+  local f
+  for f in "$1"/lib/maven-resolver-impl-1.9.*.jar; do
+    [ -e "$f" ] && return 0
+  done
+  return 1
+}
+
 fetch() {
   if command -v curl >/dev/null 2>&1; then
     curl -fsSL "$1"
@@ -119,6 +130,10 @@ fi
 # --- install into every target, replacing older versions ---
 while IFS= read -r ext; do
   [ -n "$ext" ] || continue
+  if ! is_compatible "${ext%/lib/ext}"; then
+    log "skipped (incompatible, extension requires Maven 3.9.x / resolver 1.9.x): ${ext%/lib/ext}"
+    continue
+  fi
   if $DRY_RUN; then
     log "would install $JAR -> $ext/"
     continue
