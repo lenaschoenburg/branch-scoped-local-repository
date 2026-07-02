@@ -1,0 +1,40 @@
+# Publishing a release = creating a GitHub release in the UI with a tag named v<version>
+# (e.g. v0.2.0). The tag is the single source of the version: this workflow strips the
+# leading "v" and passes it as -Drevision, so no version-bump commits are ever needed.
+#
+# Required repository secrets:
+#   CENTRAL_USERNAME / CENTRAL_PASSWORD  - central.sonatype.com user token
+#   MAVEN_GPG_KEY                        - armored private key (gpg --export-secret-keys --armor)
+#   MAVEN_GPG_PASSPHRASE                 - its passphrase
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+          server-id: central
+          server-username: MAVEN_CENTRAL_USERNAME
+          server-password: MAVEN_CENTRAL_PASSWORD
+          gpg-private-key: ${{ secrets.MAVEN_GPG_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      - name: Publish to Maven Central
+        run: mvn -B -Prelease deploy -Drevision="${GITHUB_REF_NAME#v}"
+        env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}

@@ -107,6 +107,14 @@ To verify the extension is active, run any goal with `-X` and look for the debug
 mvn verify
 ```
 
+Local builds use the dev version `0-SNAPSHOT` (the pom's `${revision}` default).
+
+## Releasing
+
+Create a GitHub release with a tag named `v<version>` (e.g. `v0.2.0`) — that is the whole
+process. The release workflow derives the version from the tag, builds, signs, and publishes to
+Maven Central; no version-bump commits exist.
+
 Runs unit tests plus integration tests that boot a real Sisu injector (verifying the
 `@Priority`-based override of the resolver's default component) and compose paths through the real
 `EnhancedLocalRepositoryManagerFactory`.
