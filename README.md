@@ -31,16 +31,22 @@ restart.
 ### Per-developer opt-in (recommended)
 
 Maven 3.9 has no user-level `extensions.xml` (that arrives with Maven 4), but the extension jar is
-fully self-contained, so it can be loaded per user without touching any project:
+fully self-contained, so it can be loaded per user without touching any project. The install
+script places the latest release into the `lib/ext/` directory of every Maven installation it
+finds — `mvn` and `mvnd` on the `PATH`, and all Maven wrapper distributions:
 
-- **`lib/ext` of the Maven installation** — works for every launcher: copy the jar into
-  `$MAVEN_HOME/lib/ext/` (for mvnd: `<mvnd-home>/mvn/lib/ext/`; for the Maven wrapper: the
-  downloaded distribution under `~/.m2/wrapper/dists/.../lib/ext/`). Repeat after upgrading the
-  Maven installation. Opt out by deleting the jar.
-- **`-Dmaven.ext.class.path=<path-to-jar>`** — for `mvn`/`mvnw` this can come from the
-  environment, e.g.
-  `export MAVEN_OPTS="-Dmaven.ext.class.path=$HOME/.m2/ext/branch-scoped-local-repository.jar"`.
-  mvnd only honors it as an actual command-line flag, not via `MAVEN_OPTS`.
+```bash
+curl -fsSL https://raw.githubusercontent.com/lenaschoenburg/branch-scoped-local-repository/main/install.sh | bash
+```
+
+Re-run it after upgrading Maven/mvnd or when the wrapper downloads a new distribution; opt out
+again with `install.sh --uninstall` (`--dry-run` shows what would happen, an explicit version can
+be passed as an argument).
+
+Manual alternatives: copy the jar into `$MAVEN_HOME/lib/ext/` yourself, or pass
+`-Dmaven.ext.class.path=<path-to-jar>` — for `mvn`/`mvnw` this can come from the environment
+(`export MAVEN_OPTS="-Dmaven.ext.class.path=..."`); mvnd only honors it as an actual command-line
+flag.
 
 Once loaded, the extension turns on the split local repository by itself whenever it detects a git
 branch, so no project files change and no further flags are needed. Builds of projects that are
