@@ -35,7 +35,7 @@ Add the extension to your project's `.mvn/extensions.xml`:
   <extension>
     <groupId>io.github.lenaschoenburg</groupId>
     <artifactId>branch-scoped-local-repository</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
   </extension>
 </extensions>
 ```
